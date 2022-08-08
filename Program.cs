@@ -57,6 +57,7 @@ namespace CSharpAcademy
                         case "0":
                             Console.WriteLine("\nGoodbye!\n");
                             closeApp = true;
+                            Environment.Exit(0);
                             break;
                         case "1":
                             GetAllRecords();
