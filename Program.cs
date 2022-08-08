@@ -64,20 +64,25 @@ namespace CSharpAcademy
                         case "2":
                             Insert();
                             break;
-                        //case 3:
-                        //    Delete();
-                        //    break;
-                        //case 4:
-                        //    Update();
-                        //    break;
-                        //default:
-                        //    Console.WriteLine("\nInvalid Command. Please type a number from 0 to 4.\n");
-                        //    break;
+                        case "3":
+                            Delete();
+                            break;
+                        case "4":
+                            Update();
+                            break;
+                        default:
+                            Console.WriteLine("\nInvalid Command. Please type a number from 0 to 4.\n");
+                            break;
                     }
 
 
                 }
             }
+
+
+
+            //CRUD functions for SQLite DB Set up
+            //Get All Records, Insert, Delete, Update
 
 
             static void GetAllRecords()
@@ -90,9 +95,9 @@ namespace CSharpAcademy
                     var tableCmd = connection.CreateCommand();
 
                     tableCmd.CommandText =
-                                    $"SELECT * FROM drinking_water ";
+                                    $"SELECT * FROM yourHabit ";
 
-                    List<DrinkingWater> tableDate = new();
+                    List<DrinkingWater> tableData = new();
 
                     SqliteDataReader reader = tableCmd.ExecuteReader();
 
@@ -127,7 +132,6 @@ namespace CSharpAcademy
 
             }
 
-        
 
             static void Insert()
             {
@@ -141,7 +145,7 @@ namespace CSharpAcademy
                     var tableCmd = connection.CreateCommand();
 
                     tableCmd.CommandText =
-                                    $"INSERT INTO drinking_water(date, quantity) VALUES('{date}', {quantity})";
+                                    $"INSERT INTO yourHabit(date, quantity) VALUES('{date}', {quantity})";
 
 
                     tableCmd.ExecuteNonQuery();
@@ -150,6 +154,76 @@ namespace CSharpAcademy
                 }
 
             }
+
+            static void Delete()
+            {
+                Console.Clear();
+                GetAllRecords();
+
+                var recordId = GetNumberInput("\n\nPlease type the Id of the record you want to delete or type 0 to return to the main menu\n\n");
+
+                using (var connection = new SqliteConnection(connectionString))
+                {
+                    connection.Open();
+                    var tableCmd = connection.CreateCommand();
+                    tableCmd.CommandText =$"DELETE from yourHabit WHERE Id = '{recordId}'";
+
+                    int rowCount = tableCmd.ExecuteNonQuery();
+
+                    if (rowCount == 0)
+                    {
+                        Console.WriteLine($"\n\nRcord with Id {recordId} doesn't exist. \n\n");
+                        Delete();
+                    }
+                }
+
+                Console.WriteLine($"\n\nRecord with Id {recordId} was deleted. \n\n");
+            }
+
+            static void Update()
+            {
+                Console.Clear();
+                GetAllRecords();
+
+                var recordId = GetNumberInput("\n\nPlease type the Id of the record you want to update or type 0 to return to the main menu\n\n");
+
+                using (var connection = new SqliteConnection(connectionString))
+                {
+                    connection.Open();
+
+                    var checkCmd = connection.CreateCommand();
+                    checkCmd.CommandText = $"SELECT EXISTS(SELECT 1 FROM yourhabit WHERE Id ={recordId})";
+                    int checkQuery = Convert.ToInt32(checkCmd.ExecuteScalar());
+
+                    if (checkQuery == 0)
+                    {
+                        Console.WriteLine($"\n\nRecord with Id {recordId} doesn't exist");
+                        connection.Close();
+                        Update();
+                    }
+
+                    string date = GetDateInput();
+
+                    int quantity = GetNumberInput("\n\nPlease insert number of glasses or other measure of your choise (no decimals allowed) \n\n");
+
+                    var tableCmd = connection.CreateCommand();
+                    tableCmd.CommandText = $"UPDATE yourhabit SET date = '{date}', quantity = {quantity} WHERE Id = {recordId})";
+
+                    tableCmd.ExecuteNonQuery();
+
+                    connection.Close();
+
+                }
+                
+            }
+
+
+
+
+
+
+
+
 
             static string GetDateInput()
             {
@@ -176,6 +250,12 @@ namespace CSharpAcademy
             }
         }
     }
+
+
+
+
+
+
 
     public class DrinkingWater
     {
